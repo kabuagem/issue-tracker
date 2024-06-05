@@ -10,6 +10,7 @@ interface Props {
   searchParams: {
     status: Status;
     orderBy: keyof Issue;
+    orderDirection: "asc" | "desc";
   };
 }
 const IssuesPage = async ({ searchParams }: Props) => {
@@ -30,7 +31,7 @@ const IssuesPage = async ({ searchParams }: Props) => {
   const orderBy = columns
     .map((column) => column.value)
     .includes(searchParams.orderBy)
-    ? { [searchParams.orderBy]: "asc" }
+    ? { [searchParams.orderBy]: searchParams.orderDirection }
     : undefined;
 
   const issues = await prisma.issue.findMany({
@@ -56,14 +57,22 @@ const IssuesPage = async ({ searchParams }: Props) => {
                     query: {
                       ...searchParams,
                       orderBy: column.value,
+                      orderDirection:
+                        searchParams.orderBy === column.value &&
+                        searchParams.orderDirection === "asc"
+                          ? "desc"
+                          : "asc",
                     },
                   }}
                 >
                   {column.label}
                 </NextLink>
-                {column.value == searchParams.orderBy && (
-                  <ArrowUpIcon className="inline" />
-                )}
+                {column.value == searchParams.orderBy &&
+                  (searchParams.orderDirection === "asc" ? (
+                    <ArrowDownIcon className="inline" />
+                  ) : (
+                    <ArrowUpIcon className="inline" />
+                  ))}
               </Table.ColumnHeaderCell>
             ))}
           </Table.Row>
